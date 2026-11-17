@@ -41,6 +41,33 @@ class AccountService
         Setting::putValue('trial_days_default', (string) max(0, min(3650, $days)));
     }
 
+    /**
+     * Code admin Ardoise241 : il ouvre le mode gérant sur n'importe quel téléphone
+     * (dépannage). Le téléphone reçoit seulement son empreinte, pour vérifier sans réseau.
+     * Tant qu'il n'a pas été réglé, on reprend le code admin de l'ancienne version.
+     */
+    public static function supportLocal(): array
+    {
+        $salt = Setting::getValue('support_salt');
+        $hash = Setting::getValue('support_hash');
+        if (! $salt || ! $hash) {
+            $legacy = (string) Setting::getValue('admin_code', LessyStore::DEFAULT_CODE);
+            self::setSupportCode($legacy);
+            $salt = Setting::getValue('support_salt');
+            $hash = Setting::getValue('support_hash');
+        }
+
+        return ['salt' => $salt, 'hash' => $hash];
+    }
+
+    public static function setSupportCode(string $code): void
+    {
+        self::assertCode($code);
+        $salt = Str::random(24);
+        Setting::putValue('support_salt', $salt);
+        Setting::putValue('support_hash', hash('sha256', $salt.$code));
+    }
+
     /** Garde les chiffres (et un + de tête) : « 077 12 34 56 » devient « 077123456 ». */
     public static function normalizePhone(string $phone): string
     {
@@ -151,6 +178,7 @@ class AccountService
             'serverTime' => now()->getTimestampMs(),
             // Permet de vérifier le code sur le téléphone sans réseau.
             'local' => ['salt' => $account->local_salt, 'hash' => $account->local_hash],
+            'support' => self::supportLocal(),
         ];
     }
 

@@ -227,6 +227,21 @@ class ConsoleController extends Controller
         return back()->with('ok', 'Durée d\'essai globale : '.$data['trial_days'].' jours. Elle s\'applique à tous les comptes sans durée particulière.');
     }
 
+    public function saveSupport(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'code' => ['required', 'string', 'confirmed'],
+        ], ['code.confirmed' => 'Les deux codes ne sont pas identiques.']);
+
+        try {
+            AccountService::setSupportCode($data['code']);
+        } catch (RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('ok', 'Code admin Ardoise241 modifié. Les téléphones le reçoivent à leur prochaine synchronisation.');
+    }
+
     public static function defaultName(string $uid): string
     {
         return preg_match('/^p(\d+)$/', $uid, $m) ? 'Nom '.$m[1] : $uid;

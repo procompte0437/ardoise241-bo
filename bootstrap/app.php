@@ -14,6 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo('/gestion/connexion');
+        // Railway termine le HTTPS devant l'application : on fait confiance à son proxy
+        // pour que les liens et formulaires soient générés en https (sinon Chrome
+        // affiche « informations non sécurisées » à l'envoi).
+        $middleware->trustProxies(at: '*');
         $middleware->alias([
             'lessy.unlocked' => \App\Http\Middleware\EnsureLessyUnlocked::class,
             'lessy.admin' => \App\Http\Middleware\EnsureLessyAdmin::class,

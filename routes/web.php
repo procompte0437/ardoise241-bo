@@ -29,5 +29,6 @@ Route::prefix('gestion')->name('gestion.')->group(function () {
         Route::post('/comptes/{account}/fiche', [ConsoleController::class, 'note'])->name('compte.fiche');
         Route::get('/reglages', [ConsoleController::class, 'settings'])->name('reglages');
         Route::post('/reglages', [ConsoleController::class, 'saveSettings'])->name('reglages.store');
+        Route::post('/reglages/code-admin', [ConsoleController::class, 'saveSupport'])->name('reglages.support');
     });
 });
