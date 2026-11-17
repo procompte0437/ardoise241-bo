@@ -1,10 +1,10 @@
 @extends('gestion.layout')
 @section('title', 'Clients')
 @section('content')
-<div class="head"><div><h1>Clients</h1><p>{{ $accounts->total() }} compte(s){{ $q !== '' || $status !== '' ? ' trouvé(s)' : '' }}</p></div></div>
+<div class="head"><div><div class="eyebrow">Suivi</div><h1>Clients</h1><p>{{ $accounts->total() }} compte(s){{ $q !== '' || $status !== '' ? ' trouvé(s)' : '' }}</p></div></div>
 
 <form class="filters" method="get">
-  <input type="search" name="q" value="{{ $q }}" placeholder="Rechercher un numéro ou un nom…" autofocus>
+  <div class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" name="q" value="{{ $q }}" placeholder="Rechercher un numéro ou un nom…" autofocus></div>
   <select name="statut" onchange="this.form.submit()">
     <option value="">Tous les statuts</option>
     @foreach (\App\Http\Controllers\Gestion\ConsoleController::STATUSES as $key => $label)
@@ -24,7 +24,7 @@
     <tbody>
     @foreach ($accounts as $account)
       <tr class="link" onclick="location.href='{{ route('gestion.compte', $account) }}'">
-        <td><a href="{{ route('gestion.compte', $account) }}" style="text-decoration:none"><b>{{ $account->name ?: 'Sans nom' }}</b></a><div class="mut sm">{{ $account->phone }}</div></td>
+        <td><div class="client"><span class="av">{{ mb_strtoupper(mb_substr($account->name ?: '#', 0, 1)) }}</span><div><a href="{{ route('gestion.compte', $account) }}" style="text-decoration:none"><b>{{ $account->name ?: 'Sans nom' }}</b></a><div class="mut sm">{{ $account->phone }}</div></div></div></td>
         <td>@include('gestion._statut')@if ($account->trial_days !== null)<div class="mut sm">essai : {{ $account->trial_days }} j</div>@endif</td>
         <td>@include('gestion._fin')</td>
         <td class="hide-sm mut sm">{{ $account->last_sync_at?->diffForHumans() ?? 'jamais' }}</td>

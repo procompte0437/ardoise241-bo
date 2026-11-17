@@ -1,7 +1,7 @@
 @extends('gestion.layout')
 @section('title', 'Réglages')
 @section('content')
-<div class="head"><div><h1>Réglages</h1><p>Paramètres communs à tous les clients.</p></div></div>
+<div class="head"><div><div class="eyebrow">Configuration</div><h1>Réglages</h1><p>Paramètres communs à tous les clients.</p></div></div>
 <div class="card" style="max-width:560px">
   <h2>Durée d'essai gratuite</h2>
   <p class="mut" style="margin-top:-6px">Le compte à rebours démarre quand le client crée son code d'accès. Cette durée s'applique à tous les comptes qui n'ont pas de durée particulière (réglable sur la fiche de chaque client).</p>
