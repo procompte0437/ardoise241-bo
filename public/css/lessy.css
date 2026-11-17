@@ -118,3 +118,18 @@ a.btn,a.chip{display:inline-block}
 label.btn{display:inline-block;text-align:center}
 .filebtn{position:relative;overflow:hidden}
 .filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.day{margin-bottom:18px}
+.day h4{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:0 0 8px;padding:10px 12px;background:var(--k);color:var(--y);border-radius:12px;font-family:'Baloo 2','Inter',sans-serif;font-size:18px;font-weight:700}
+.day h4 small{font-family:'Inter',sans-serif;font-size:13px;opacity:.85}
+.ses{background:var(--w);border:3px solid var(--k);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.ses .sl{display:flex;align-items:baseline;gap:10px}
+.ses time{flex:none;font-weight:800;font-size:13px;background:var(--k);color:var(--y);border-radius:6px;padding:2px 7px;font-variant-numeric:tabular-nums}
+.ses .lab{flex:1;font-weight:700;font-size:14px}
+.ses .sl b{font-family:'Baloo 2','Inter',sans-serif;font-size:21px;font-weight:800}
+.ses.pay{background:#F6E7C1}
+.ses.pay .sl b{color:var(--red)}
+.its{list-style:none;margin:6px 0 0 18px;padding:0 0 0 12px;border-left:3px solid var(--y)}
+.its li{display:grid;grid-template-columns:1fr auto 90px;gap:10px;font-size:14px;padding:2px 0}
+.its .q{font-weight:800}
+.its .p{text-align:right;font-variant-numeric:tabular-nums;opacity:.8}
+.bil{border-top:0}

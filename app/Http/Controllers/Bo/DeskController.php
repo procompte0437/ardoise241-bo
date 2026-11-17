@@ -156,12 +156,42 @@ class DeskController extends Controller
     public function bilan(Person $person): View
     {
         $person->load('entries.items');
+        $days = [];
+        foreach ($person->entries as $entry) {
+            $key = $entry->happened_at->format('Y-m-d');
+            if (! isset($days[$key])) {
+                $days[$key] = [
+                    'label' => $this->dayHeading($entry->happened_at),
+                    'rows' => [],
+                    'sum' => 0,
+                ];
+            }
+            $days[$key]['rows'][] = $entry;
+            $days[$key]['sum'] += $entry->pay ? -(int) $entry->amount : (int) $entry->amount;
+        }
 
         return view('bo.bilan', [
             'person' => $person,
             'admin' => $this->admin(),
-            'when' => fn ($date) => $this->store->whenLabel($date),
+            'days' => $days,
         ]);
+    }
+
+    private function dayHeading(\Carbon\CarbonInterface $date): string
+    {
+        if ($date->isToday()) {
+            return "Aujourd'hui";
+        }
+        if ($date->isYesterday()) {
+            return 'Hier';
+        }
+
+        $label = $date->locale('fr')->isoFormat('dddd D MMMM');
+        if ($date->year !== now()->year) {
+            $label .= ' '.$date->year;
+        }
+
+        return mb_strtoupper(mb_substr($label, 0, 1)).mb_substr($label, 1);
     }
 
     public function erase(Request $request, Person $person): RedirectResponse

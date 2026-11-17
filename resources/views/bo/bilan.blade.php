@@ -17,26 +17,39 @@
   <div class="actions">
     <a class="btn dark" href="{{ route('session', $person) }}">Nouvelle session (images)</a>
     <button class="btn out" type="button" id="eraseBtn" data-name="{{ $person->name }}" data-debt="{{ \App\Services\LessyStore::format($person->debt) }}" data-action="{{ route('bilan.erase', $person) }}">Effacer le bilan</button>
-    @if($admin)
-      <button class="btn out" type="button" id="payBtn" data-action="{{ route('bilan.pay', $person) }}">Enregistrer un paiement</button>
-    @endif
+    <button class="btn out" type="button" id="payBtn" data-action="{{ route('bilan.pay', $person) }}">Enregistrer un paiement</button>
   </div>
-  @if($person->entries->isEmpty())
+  @if($days === [])
     <div class="empty">Aucun montant pour l'instant.</div>
   @else
     <div class="bil">
-      @foreach($person->entries as $entry)
-        @if($entry->pay)
-          <div class="bl pay">
-            <b>− {{ \App\Services\LessyStore::format($entry->amount) }}</b>
-            <small>{{ $entry->label ?: 'Paiement' }} · {{ $when($entry->happened_at) }}</small>
-          </div>
-        @else
-          <div class="bl">
-            <b>{{ \App\Services\LessyStore::format($entry->amount) }}</b>
-            <small>{{ $when($entry->happened_at) }} · {{ $entry->items->map(fn ($item) => $item->name.' ×'.$item->qty)->join(', ') }}</small>
-          </div>
-        @endif
+      @foreach($days as $day)
+        <section class="day">
+          <h4>
+            <span>{{ $day['label'] }}</span>
+            <small>{{ $day['sum'] >= 0 ? '+ '.\App\Services\LessyStore::format($day['sum']) : '− '.\App\Services\LessyStore::format(abs($day['sum'])) }}</small>
+          </h4>
+          @foreach($day['rows'] as $entry)
+            <div class="ses {{ $entry->pay ? 'pay' : '' }}">
+              <div class="sl">
+                <time>{{ $entry->happened_at->format('H:i') }}</time>
+                <span class="lab">{{ $entry->pay ? ($entry->label ?: 'Paiement') : 'Session' }}</span>
+                <b>{{ $entry->pay ? '− '.\App\Services\LessyStore::format($entry->amount) : \App\Services\LessyStore::format($entry->amount) }}</b>
+              </div>
+              @if(! $entry->pay && $entry->items->isNotEmpty())
+                <ul class="its">
+                  @foreach($entry->items as $item)
+                    <li>
+                      <span>{{ $item->name }}</span>
+                      <span class="q">×{{ $item->qty }}</span>
+                      <span class="p">{{ $item->price ? \App\Services\LessyStore::format($item->price * $item->qty) : '' }}</span>
+                    </li>
+                  @endforeach
+                </ul>
+              @endif
+            </div>
+          @endforeach
+        </section>
       @endforeach
     </div>
   @endif
