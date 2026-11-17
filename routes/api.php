@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AppController;
 use App\Http\Controllers\Api\LessyController;
 use Illuminate\Support\Facades\Route;
 
@@ -23,5 +24,22 @@ Route::middleware('lessy.unlocked')->group(function () {
         Route::post('/foods/{food}/image', [LessyController::class, 'image']);
         Route::delete('/foods/{food}', [LessyController::class, 'deleteFood']);
         Route::post('/settings/code', [LessyController::class, 'changeCode']);
+    });
+});
+
+// Application mobile : comptes par téléphone + code, données synchronisées.
+Route::prefix('app')->group(function () {
+    Route::middleware('throttle:10,1')->group(function () {
+        Route::post('/register', [AppController::class, 'register']);
+        Route::post('/login', [AppController::class, 'login']);
+    });
+
+    Route::middleware('app.account')->group(function () {
+        Route::get('/me', [AppController::class, 'me']);
+        Route::post('/sync', [AppController::class, 'sync']);
+        Route::post('/foods/{uid}/image', [AppController::class, 'uploadImage']);
+        Route::get('/foods/{uid}/image', [AppController::class, 'image']);
+        Route::post('/code', [AppController::class, 'changeCode'])->middleware('throttle:10,1');
+        Route::post('/logout', [AppController::class, 'logout']);
     });
 });

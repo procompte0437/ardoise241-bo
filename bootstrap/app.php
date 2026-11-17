@@ -13,10 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->redirectGuestsTo('/connexion');
+        $middleware->redirectGuestsTo(fn (Request $request) => $request->is('gestion*') ? '/gestion/connexion' : '/connexion');
         $middleware->alias([
             'lessy.unlocked' => \App\Http\Middleware\EnsureLessyUnlocked::class,
             'lessy.admin' => \App\Http\Middleware\EnsureLessyAdmin::class,
+            'app.account' => \App\Http\Middleware\EnsureAccountToken::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
