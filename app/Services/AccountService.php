@@ -270,6 +270,7 @@ class AccountService
                 }
                 $this->upsert(AccountEntry::class, $locked, $uid, $row, $rev, [
                     'person_uid' => $person,
+                    'ref' => $this->uid(['uid' => $row['ref'] ?? null]),
                     'amount' => max(0, min(1_000_000_000, (int) ($row['amount'] ?? 0))),
                     'pay' => (bool) ($row['pay'] ?? false),
                     'label' => isset($row['label']) ? Str::limit((string) $row['label'], 60, '') : null,
@@ -304,7 +305,7 @@ class AccountService
             'entries' => AccountEntry::query()->where('account_id', $account->id)->where('rev', '>', $since)->get()
                 ->map(fn (AccountEntry $e) => [
                     'uid' => $e->uid, 'person' => $e->person_uid, 'amount' => $e->amount, 'pay' => $e->pay,
-                    'label' => $e->label, 'items' => $e->items ?? [], 'at' => $e->happened_at,
+                    'label' => $e->label, 'ref' => $e->ref, 'items' => $e->items ?? [], 'at' => $e->happened_at,
                     'deleted' => $e->deleted, 'updatedAt' => $e->client_updated_at,
                 ])->values(),
         ];
@@ -344,16 +345,60 @@ class AccountService
      */
     public function debts(Account $account): array
     {
-        $debts = [];
+        $byPerson = [];
         AccountEntry::query()->where('account_id', $account->id)->where('deleted', false)
             ->where('person_uid', '!=', self::CASH) // ventes encaissées : pas une dette
             ->orderBy('happened_at')->orderBy('id')
-            ->each(function (AccountEntry $e) use (&$debts) {
-                $current = $debts[$e->person_uid] ?? 0;
-                $debts[$e->person_uid] = $e->pay ? max(0, $current - $e->amount) : $current + $e->amount;
+            ->each(function (AccountEntry $e) use (&$byPerson) {
+                $byPerson[$e->person_uid][] = $e;
             });
 
+        $debts = [];
+        foreach ($byPerson as $person => $entries) {
+            $debts[$person] = array_sum(array_column(self::allocate($entries), 'remaining'));
+        }
+
         return $debts;
+    }
+
+    /**
+     * Répartit les paiements sur les bons, comme le téléphone :
+     * un paiement avec ref va d'abord à ce bon, le reste (ou un paiement sans ref)
+     * solde les bons du plus ancien au plus récent ; un trop-payé est perdu.
+     *
+     * @param  array<AccountEntry>  $entries  lignes d'un client, triées par date
+     * @return array<string, array{amount:int, paid:int, remaining:int}>
+     */
+    public static function allocate(array $entries): array
+    {
+        $bons = [];
+        foreach ($entries as $e) {
+            if (! $e->pay) {
+                $bons[$e->uid] = ['amount' => $e->amount, 'paid' => 0, 'remaining' => $e->amount];
+
+                continue;
+            }
+            $left = $e->amount;
+            $apply = function (string $uid) use (&$bons, &$left) {
+                $take = min($left, $bons[$uid]['remaining']);
+                if ($take > 0) {
+                    $bons[$uid]['paid'] += $take;
+                    $bons[$uid]['remaining'] -= $take;
+                    $left -= $take;
+                }
+            };
+            if ($e->ref && isset($bons[$e->ref])) {
+                $apply($e->ref);
+            }
+            foreach (array_keys($bons) as $uid) {
+                if ($left <= 0) {
+                    break;
+                }
+                $apply($uid);
+            }
+        }
+
+        return $bons;
     }
 
     private function fillCode(Account $account, string $code): void

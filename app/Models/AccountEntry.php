@@ -8,7 +8,7 @@ class AccountEntry extends Model
 {
     protected $table = 'account_entries';
 
-    protected $fillable = ['account_id', 'uid', 'person_uid', 'amount', 'pay', 'label', 'items', 'happened_at', 'deleted', 'client_updated_at', 'rev'];
+    protected $fillable = ['account_id', 'uid', 'person_uid', 'ref', 'amount', 'pay', 'label', 'items', 'happened_at', 'deleted', 'client_updated_at', 'rev'];
 
     protected function casts(): array
     {
