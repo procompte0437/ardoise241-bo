@@ -31,6 +31,44 @@ class AccountService
 
     public const MAX_FOODS = 150;
 
+    /** « Client » réservé par l'application aux ventes encaissées tout de suite. */
+    public const CASH = '_caisse';
+
+    /**
+     * Fiche d'inventaire d'un compte depuis une date (ms), comme sur le téléphone.
+     *
+     * @return array{cash:int, cashCount:int, credit:int, payments:int, received:int, articles:array}
+     */
+    public function inventory(Account $account, int $from = 0): array
+    {
+        $out = ['cash' => 0, 'cashCount' => 0, 'credit' => 0, 'payments' => 0, 'articles' => []];
+        AccountEntry::query()->where('account_id', $account->id)->where('deleted', false)
+            ->where('happened_at', '>=', $from)
+            ->each(function (AccountEntry $e) use (&$out) {
+                if ($e->pay) {
+                    $out['payments'] += $e->amount;
+
+                    return;
+                }
+                if ($e->person_uid === self::CASH) {
+                    $out['cash'] += $e->amount;
+                    $out['cashCount']++;
+                } else {
+                    $out['credit'] += $e->amount;
+                }
+                foreach ($e->items ?? [] as $it) {
+                    $name = (string) ($it['n'] ?? '');
+                    $out['articles'][$name] ??= ['n' => $name, 'q' => 0, 'amount' => 0];
+                    $out['articles'][$name]['q'] += (int) ($it['q'] ?? 0);
+                    $out['articles'][$name]['amount'] += (int) ($it['q'] ?? 0) * (int) ($it['p'] ?? 0);
+                }
+            });
+        usort($out['articles'], fn ($a, $b) => $b['amount'] <=> $a['amount']);
+        $out['received'] = $out['cash'] + $out['payments'];
+
+        return $out;
+    }
+
     public static function globalTrialDays(): int
     {
         return max(0, (int) Setting::getValue('trial_days_default', (string) self::DEFAULT_TRIAL_DAYS));
@@ -308,6 +346,7 @@ class AccountService
     {
         $debts = [];
         AccountEntry::query()->where('account_id', $account->id)->where('deleted', false)
+            ->where('person_uid', '!=', self::CASH) // ventes encaissées : pas une dette
             ->orderBy('happened_at')->orderBy('id')
             ->each(function (AccountEntry $e) use (&$debts) {
                 $current = $debts[$e->person_uid] ?? 0;

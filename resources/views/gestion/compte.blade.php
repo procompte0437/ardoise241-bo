@@ -54,6 +54,30 @@
     </div>
 
     <div class="card">
+      <h2>Fiche d'inventaire <span class="mut sm">synchronisée depuis le téléphone</span></h2>
+      <table>
+        <thead><tr><th></th><th class="num">Aujourd'hui</th><th class="num">30 jours</th></tr></thead>
+        <tbody>
+          <tr><td><b>Total encaissé</b></td><td class="num"><b>{{ $fmt($invToday['received']) }}</b></td><td class="num"><b>{{ $fmt($invMonth['received']) }}</b></td></tr>
+          <tr><td>Ventes encaissées</td><td class="num">{{ $fmt($invToday['cash']) }} <span class="mut sm">({{ $invToday['cashCount'] }})</span></td><td class="num">{{ $fmt($invMonth['cash']) }} <span class="mut sm">({{ $invMonth['cashCount'] }})</span></td></tr>
+          <tr><td>Mis en bon</td><td class="num">{{ $fmt($invToday['credit']) }}</td><td class="num">{{ $fmt($invMonth['credit']) }}</td></tr>
+          <tr><td>Paiements de bons</td><td class="num">{{ $fmt($invToday['payments']) }}</td><td class="num">{{ $fmt($invMonth['payments']) }}</td></tr>
+        </tbody>
+      </table>
+      @if (! empty($invMonth['articles']))
+        <h2 style="margin-top:18px">Articles vendus sur 30 jours</h2>
+        <table>
+          <thead><tr><th>Article</th><th class="num">Qté</th><th class="num">Montant</th></tr></thead>
+          <tbody>
+          @foreach (array_slice($invMonth['articles'], 0, 15) as $a)
+            <tr><td>{{ $a['n'] }}</td><td class="num"><b>{{ $a['q'] }}</b></td><td class="num">{{ $fmt($a['amount']) }}</td></tr>
+          @endforeach
+          </tbody>
+        </table>
+      @endif
+    </div>
+
+    <div class="card">
       <h2>Dernières opérations</h2>
       @if ($entries->isEmpty())
         <div class="empty">Rien n'a encore été synchronisé.</div>

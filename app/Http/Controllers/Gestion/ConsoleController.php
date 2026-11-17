@@ -130,6 +130,8 @@ class ConsoleController extends Controller
             'people' => $people,
             'tokens' => $account->tokens()->orderByDesc('last_used_at')->get(),
             'globalDays' => AccountService::globalTrialDays(),
+            'invToday' => $this->accounts->inventory($account, now()->startOfDay()->getTimestampMs()),
+            'invMonth' => $this->accounts->inventory($account, now()->subDays(29)->startOfDay()->getTimestampMs()),
         ]);
     }
 
@@ -244,6 +246,9 @@ class ConsoleController extends Controller
 
     public static function defaultName(string $uid): string
     {
+        if ($uid === AccountService::CASH) {
+            return 'Vente encaissée';
+        }
         return preg_match('/^p(\d+)$/', $uid, $m) ? 'Nom '.$m[1] : $uid;
     }
 }
