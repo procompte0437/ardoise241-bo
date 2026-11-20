@@ -34,6 +34,7 @@ Route::prefix('app')->group(function () {
         Route::post('/register', [AppController::class, 'register']);
         Route::post('/login', [AppController::class, 'login']);
     });
+    Route::get('/shops/directory', [CommerceController::class, 'directory'])->middleware('throttle:30,1');
 
     Route::middleware('app.account')->group(function () {
         Route::get('/me', [AppController::class, 'me']);

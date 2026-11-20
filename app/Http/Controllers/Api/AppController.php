@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\AccountFood;
 use App\Services\AccountService;
+use App\Services\CommerceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -25,12 +26,26 @@ class AppController extends Controller
             'name' => ['nullable', 'string', 'max:60'],
             'device' => ['nullable', 'string', 'max:120'],
             'role' => ['nullable', 'in:merchant,customer'],
+            'shops' => ['nullable', 'array', 'max:100'],
+            'shops.*' => ['integer'],
         ], ['code.confirmed' => 'Les deux codes ne sont pas identiques.']);
 
         try {
             [$account, $token] = $this->accounts->register($data['phone'], $data['code'], $data['name'] ?? null, $data['device'] ?? null, $data['role'] ?? 'merchant');
         } catch (RuntimeException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        // Client : les boutiques cochées à la création sont suivies tout de suite.
+        if ($account->role === 'customer') {
+            $commerce = app(CommerceService::class);
+            foreach (array_unique($data['shops'] ?? []) as $shopId) {
+                try {
+                    $commerce->follow($account, (int) $shopId);
+                } catch (RuntimeException) {
+                    // boutique disparue ou suspendue entre-temps : on l'ignore
+                }
+            }
         }
 
         return response()->json(['token' => $token, 'account' => $this->accounts->payload($account)], 201);

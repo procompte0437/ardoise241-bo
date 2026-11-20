@@ -22,6 +22,12 @@ class CommerceController extends Controller
         return response()->json($this->commerce->snapshot($this->account($request)));
     }
 
+    /** Boutiques à cocher pendant la création d'un compte client. */
+    public function directory(): JsonResponse
+    {
+        return response()->json(['shops' => $this->commerce->directory()]);
+    }
+
     public function search(Request $request): JsonResponse
     {
         $data = $request->validate(['q' => ['nullable', 'string', 'max:60']]);

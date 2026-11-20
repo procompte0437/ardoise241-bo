@@ -61,6 +61,20 @@ class CommerceService
             ])->values()->all();
     }
 
+    /** Liste des boutiques proposées à la création d'un compte client (pas encore connecté). */
+    public function directory(): array
+    {
+        return Account::query()->where('role', 'merchant')->where('blocked', false)
+            ->whereNotNull('name')->where('name', '!=', '')
+            ->orderBy('name')->limit(300)->get()
+            ->map(fn (Account $s) => [
+                'id' => $s->id,
+                'name' => $s->name,
+                'hint' => '··· '.substr($s->phone, -3),
+                'articles' => $this->catalogQuery($s)->count(),
+            ])->values()->all();
+    }
+
     public function follow(Account $customer, int $shopId): ShopLink
     {
         $shop = Account::query()->where('id', $shopId)->where('role', 'merchant')->where('blocked', false)->first();
