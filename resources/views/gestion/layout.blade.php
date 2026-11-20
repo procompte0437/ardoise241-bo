@@ -79,6 +79,7 @@ tbody tr.link:hover{background:#FCF8EE}
 .p-abonne{background:var(--okbg);color:var(--ok)}
 .p-expire{background:var(--badbg);color:var(--bad)}
 .p-bloque{background:var(--offbg);color:var(--off)}
+.p-client{background:#E3ECFF;color:#2350B8}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:12px;padding:10px 16px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;white-space:nowrap;transition:transform .1s,background .15s,box-shadow .15s}
 .btn:hover{background:var(--ink2);box-shadow:0 8px 18px -10px rgba(22,18,14,.5)}
 .btn:active{transform:translateY(1px)}

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AppController;
+use App\Http\Controllers\Api\CommerceController;
 use App\Http\Controllers\Api\LessyController;
 use Illuminate\Support\Facades\Route;
 
@@ -41,5 +42,18 @@ Route::prefix('app')->group(function () {
         Route::get('/foods/{uid}/image', [AppController::class, 'image']);
         Route::post('/code', [AppController::class, 'changeCode'])->middleware('throttle:10,1');
         Route::post('/logout', [AppController::class, 'logout']);
+
+        // Espace client et suivi des clients par le commerçant.
+        Route::get('/commerce', [CommerceController::class, 'state']);
+        Route::get('/shops', [CommerceController::class, 'search']);
+        Route::post('/shops/{shop}/follow', [CommerceController::class, 'follow'])->whereNumber('shop');
+        Route::delete('/shops/{shop}/follow', [CommerceController::class, 'unfollow'])->whereNumber('shop');
+        Route::post('/orders', [CommerceController::class, 'order']);
+        Route::post('/orders/{uid}/cancel', [CommerceController::class, 'cancel']);
+        Route::post('/orders/{order}/status', [CommerceController::class, 'status'])->whereNumber('order');
+        Route::post('/messages', [CommerceController::class, 'message']);
+        Route::post('/messages/read', [CommerceController::class, 'read']);
     });
+
+    Route::get('/shops/{shop}/foods/{uid}/image', [CommerceController::class, 'image'])->whereNumber('shop');
 });

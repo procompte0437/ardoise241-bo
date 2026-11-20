@@ -23,6 +23,7 @@ class ConsoleController extends Controller
         'abonne' => 'Abonné',
         'expire' => 'Expiré',
         'bloque' => 'Suspendu',
+        'client' => 'Espace client',
     ];
 
     public function __construct(private AccountService $accounts) {}
@@ -65,7 +66,7 @@ class ConsoleController extends Controller
             $counts[$account->status()]++;
         }
 
-        $soon = $all->filter(fn (Account $a) => ! $a->blocked && ! $a->isExpired() && $a->daysLeft() <= 7)
+        $soon = $all->filter(fn (Account $a) => ! $a->isCustomer() && ! $a->blocked && ! $a->isExpired() && $a->daysLeft() <= 7)
             ->sortBy(fn (Account $a) => $a->accessEndsAt()->getTimestamp())->take(8);
 
         return view('gestion.tableau', [

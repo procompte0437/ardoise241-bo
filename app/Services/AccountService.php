@@ -131,11 +131,16 @@ class AccountService
         }
     }
 
-    public function register(string $phone, string $code, ?string $name, ?string $device): array
+    public function register(string $phone, string $code, ?string $name, ?string $device, string $role = 'merchant'): array
     {
         $phone = self::normalizePhone($phone);
         self::assertPhone($phone);
         self::assertCode($code);
+
+        $role = $role === 'customer' ? 'customer' : 'merchant';
+        if ($role === 'customer' && trim((string) $name) === '') {
+            throw new RuntimeException('Entrez votre nom : les boutiques le verront sur vos commandes.');
+        }
 
         if (Account::query()->where('phone', $phone)->exists()) {
             throw new RuntimeException('Ce numéro a déjà un compte. Touchez « J\'ai déjà un compte » pour le retrouver.');
@@ -143,6 +148,7 @@ class AccountService
 
         $account = new Account([
             'phone' => $phone,
+            'role' => $role,
             'name' => $name !== null && trim($name) !== '' ? Str::limit(trim($name), 60, '') : null,
             'trial_started_at' => now(), // le compte à rebours démarre à la création du code
             'last_device' => $device ? Str::limit($device, 120, '') : null,
@@ -207,6 +213,7 @@ class AccountService
     {
         return [
             'phone' => $account->phone,
+            'role' => $account->role ?: 'merchant',
             'name' => $account->name,
             'status' => $account->status(),
             'blocked' => $account->blocked,

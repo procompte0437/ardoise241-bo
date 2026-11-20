@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Account extends Model
 {
     protected $fillable = [
-        'phone', 'name', 'code_hash', 'local_salt', 'local_hash', 'trial_started_at',
+        'phone', 'role', 'name', 'code_hash', 'local_salt', 'local_hash', 'trial_started_at',
         'trial_days', 'paid_until', 'blocked', 'rev', 'last_sync_at', 'last_device', 'note',
     ];
 
@@ -66,8 +66,17 @@ class Account extends Model
         return $trialEnd;
     }
 
+    public function isCustomer(): bool
+    {
+        return $this->role === 'customer';
+    }
+
     public function isExpired(): bool
     {
+        if ($this->isCustomer()) {
+            return false; // l'espace client est gratuit
+        }
+
         return now()->greaterThanOrEqualTo($this->accessEndsAt());
     }
 
@@ -81,6 +90,9 @@ class Account extends Model
     {
         if ($this->blocked) {
             return 'bloque';
+        }
+        if ($this->isCustomer()) {
+            return 'client';
         }
         if ($this->isExpired()) {
             return 'expire';

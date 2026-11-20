@@ -24,10 +24,11 @@ class AppController extends Controller
             'code' => ['required', 'string', 'confirmed'],
             'name' => ['nullable', 'string', 'max:60'],
             'device' => ['nullable', 'string', 'max:120'],
+            'role' => ['nullable', 'in:merchant,customer'],
         ], ['code.confirmed' => 'Les deux codes ne sont pas identiques.']);
 
         try {
-            [$account, $token] = $this->accounts->register($data['phone'], $data['code'], $data['name'] ?? null, $data['device'] ?? null);
+            [$account, $token] = $this->accounts->register($data['phone'], $data['code'], $data['name'] ?? null, $data['device'] ?? null, $data['role'] ?? 'merchant');
         } catch (RuntimeException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }
