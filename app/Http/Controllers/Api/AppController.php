@@ -128,6 +128,22 @@ class AppController extends Controller
         return response()->json(['message' => 'Code modifié.', 'account' => $this->accounts->payload($account)]);
     }
 
+    /** Nom du commerce (ou du client), affiché aux clients et dans la recherche de boutiques. */
+    public function profile(Request $request): JsonResponse
+    {
+        $data = $request->validate(['name' => ['required', 'string', 'max:60']]);
+        $name = trim($data['name']);
+        if ($name === '') {
+            return response()->json(['message' => 'Entrez un nom.'], 422);
+        }
+
+        $account = $this->account($request);
+        $account->name = $name;
+        $account->save();
+
+        return response()->json(['account' => $this->accounts->payload($account)]);
+    }
+
     public function logout(Request $request): JsonResponse
     {
         $this->accounts->forgetToken((string) $request->bearerToken());

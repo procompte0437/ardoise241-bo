@@ -42,6 +42,7 @@ Route::prefix('app')->group(function () {
         Route::get('/foods/{uid}/image', [AppController::class, 'image']);
         Route::post('/code', [AppController::class, 'changeCode'])->middleware('throttle:10,1');
         Route::post('/logout', [AppController::class, 'logout']);
+        Route::post('/profile', [AppController::class, 'profile']);
 
         // Espace client et suivi des clients par le commerçant.
         Route::get('/commerce', [CommerceController::class, 'state']);
